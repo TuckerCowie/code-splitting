@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+const InlineManifestWebpackPlugin = require('inline-manifest-webpack-plugin');
 
 // Okay, this may be confusing at first glance but go through it step-by-step
 module.exports = env => {
@@ -14,20 +15,16 @@ module.exports = env => {
      */
     entry: {
       app: path.join(__dirname, '../src/'),
-      vendor: ['react', 'react-dom', 'react-router'],
+      vendor: Object.keys(pkg.dependencies),
     },
     /**
      * output tells webpack where to put the files he creates
      * after running all its loaders and plugins.
-     *
-     * > [name].[hash].js will output something like app.3531f6aad069a0e8dc0e.js
-     * > path.join(__dirname, '../build/') will output into a /build folder in
-     *   the root of this prject.
      */
     output: {
-      filename: '[name].[hash].js',
+      filename: env.prod ? '[name].[chunkhash].js' : '[name].js',
+      chunkFilename: env.prod ? '[id].[chunkhash].js' : '[id].js',
       path: path.join(__dirname, '../build/'),
-      // publicPath: '/', can uncomment if you want everything relative to root '/'
     },
 
     module: {
@@ -46,9 +43,9 @@ module.exports = env => {
 
     plugins: removeEmpty([
       new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor',
+        name: ['vendor', 'manifest'],
         minChunks: Infinity,
-        filename: '[name].[hash].js',
+        filename: '[name].[chunkhash].js',
       }),
 
       /**
@@ -56,10 +53,12 @@ module.exports = env => {
       * from within our index.html
       */
       new HtmlWebpackPlugin({
-        template: path.join(__dirname, '../src/index.html'),
+        template: path.join(__dirname, '../src/index.ejs'),
         filename: 'index.html',
         inject: 'body',
       }),
+
+      new InlineManifestWebpackPlugin(),
 
       // Only running DedupePlugin() and UglifyJsPlugin() in production
       ifProd(new webpack.optimize.DedupePlugin()),

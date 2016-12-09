@@ -24,6 +24,7 @@
     "babel-preset-latest": "^6.16.0",
     "babel-preset-react": "^6.16.0",
     "html-webpack-plugin": "^2.24.1",
+    "inline-manifest-webpack-plugin": "^3.0.1",
     "webpack": "v2.1.0-beta.25",
     "webpack-dev-server": "v2.1.0-beta.10"
   }
